@@ -27,7 +27,7 @@ if (!isset($_POST['imagefind']) or empty($_POST['imagefind'])) {
 	<p><strong>Select an existing picture to use</strong><br/>
 	<div id="message" style="margin:0; padding:0;"><?=$message?></div>
 		<?php
-			if (!is_dir('/images/'.$_REQUEST['id'].'/'))
+			if (!is_dir('images/'.$_REQUEST['id'].'/'))
 			{
 				mkdir('images/'.$_REQUEST['id'].'/',0777,true);
 			}
