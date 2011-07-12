@@ -110,12 +110,23 @@ class EJ_adverts_mt
 				locLevel TINYINT(1) NOT NULL DEFAULT 0 ,
 				PRIMARY KEY (locId)
 				)");
+			$this->EJ_mysql->query("SHOW TABLES LIKE '{$this->EJ_mysql->prefix}module_EJ_adverts_mt_locs'");
+			if ($this->EJ_mysql->numRows()!=1) return false;
 			$this->EJ_mysql->query("CREATE TABLE IF NOT EXISTS {$this->EJ_mysql->prefix}module_EJ_adverts_mt_hits (
 				adId INT(11) NOT NULL,
 				hitMonth VARCHAR(4) NOT NULL ,
 				hits INT(7) NOT NULL DEFAULT 0
 				)");
-			$this->EJ_mysql->query("SHOW TABLES LIKE '{$this->EJ_mysql->prefix}module_EJ_adverts_mt_locs'");
+			$this->EJ_mysql->query("SHOW TABLES LIKE '{$this->EJ_mysql->prefix}module_EJ_adverts_mt_hits'");
+			if ($this->EJ_mysql->numRows()!=1) return false;
+			$this->EJ_mysql->query("CREATE TABLE IF NOT EXISTS {$this->EJ_mysql->prefix}module_EJ_adverts_mt_credits (
+				tranId INT(11) NOT NULL,
+				userId VARCHAR(4) NOT NULL ,
+				buysell VARCHAR(1) NOT NULL,
+				amount int(6) NOT NULL,
+				PRIMARY KEY (tranId)
+				)");
+			$this->EJ_mysql->query("SHOW TABLES LIKE '{$this->EJ_mysql->prefix}module_EJ_adverts_mt_credits'");
 			if ($this->EJ_mysql->numRows()!=1) return false;
 			// Create initial advert
 			$this->EJ_mysql->query("SELECT catId FROM {$this->EJ_mysql->prefix}module_EJ_adverts_mt_cats");
@@ -205,27 +216,7 @@ class EJ_adverts_mt
 			</p>";
 		switch ($this->vars['oldversion'])
 		{
-			case "0.3.2":
-				$this->EJ_mysql->query("ALTER TABLE {$this->EJ_mysql->prefix}module_EJ_adverts_mt MODIFY EJ_advertCat TEXT");
-				$this->EJ_mysql->query("UPDATE {$this->EJ_mysql->prefix}module_EJ_adverts_mt SET EJ_advertCat = CONCAT('(',EJ_advertCat,')')");
-			break;
-			case "0.3.1":
-				$this->EJ_mysql->query("ALTER TABLE {$this->EJ_mysql->prefix}module_EJ_adverts_mt ADD EJ_advertExtra TEXT");
-				$this->EJ_mysql->query("ALTER TABLE {$this->EJ_mysql->prefix}module_EJ_adverts_mt MODIFY EJ_advertCat TEXT");
-				$this->EJ_mysql->query("UPDATE {$this->EJ_mysql->prefix}module_EJ_adverts_mt SET EJ_advertCat = CONCAT('(',EJ_advertCat,')')");
-			break;
-			case "0.3":
-				$this->EJ_mysql->query("ALTER TABLE {$this->EJ_mysql->prefix}module_EJ_adverts_mt ADD EJ_advertTried TINYINT(1) NOT NULL DEFAULT 0");
-				$this->EJ_mysql->query("ALTER TABLE {$this->EJ_mysql->prefix}module_EJ_adverts_mt ADD EJ_advertExtra TEXT");
-				$this->EJ_mysql->query("ALTER TABLE {$this->EJ_mysql->prefix}module_EJ_adverts_mt MODIFY EJ_advertCat TEXT");
-				$this->EJ_mysql->query("UPDATE {$this->EJ_mysql->prefix}module_EJ_adverts_mt SET EJ_advertCat = CONCAT('(',EJ_advertCat,')')");
-			break;
 			default:
-				$this->EJ_mysql->query("ALTER TABLE {$this->EJ_mysql->prefix}module_EJ_adverts_mt ADD EJ_advertTag VARCHAR(150)");
-				$this->EJ_mysql->query("ALTER TABLE {$this->EJ_mysql->prefix}module_EJ_adverts_mt ADD EJ_advertTried TINYINT(1) NOT NULL DEFAULT 0");
-				$this->EJ_mysql->query("ALTER TABLE {$this->EJ_mysql->prefix}module_EJ_adverts_mt ADD EJ_advertExtra TEXT");
-				$this->EJ_mysql->query("ALTER TABLE {$this->EJ_mysql->prefix}module_EJ_adverts_mt MODIFY EJ_advertCat TEXT");
-				$this->EJ_mysql->query("UPDATE {$this->EJ_mysql->prefix}module_EJ_adverts_mt SET EJ_advertCat = CONCAT('(',EJ_advertCat,')')");
 			break;
 		}
 		echo "
@@ -250,6 +241,8 @@ class EJ_adverts_mt
 		$this->EJ_mysql->query("DROP TABLE IF EXISTS {$this->EJ_mysql->prefix}module_EJ_adverts_mt_cats");
 		$this->EJ_mysql->query("DROP TABLE IF EXISTS {$this->EJ_mysql->prefix}module_EJ_adverts_mt_atts");
 		$this->EJ_mysql->query("DROP TABLE IF EXISTS {$this->EJ_mysql->prefix}module_EJ_adverts_mt_locs");
+		$this->EJ_mysql->query("DROP TABLE IF EXISTS {$this->EJ_mysql->prefix}module_EJ_adverts_mt_hits");
+		$this->EJ_mysql->query("DROP TABLE IF EXISTS {$this->EJ_mysql->prefix}module_EJ_adverts_mt_credits");
 		echo "
 			<p class=\"EJ_instText\">
 			&gt; Removing User Permissions...
