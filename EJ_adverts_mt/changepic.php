@@ -29,7 +29,7 @@ if (!isset($_POST['imagefind']) or empty($_POST['imagefind'])) {
 		<?php
 			if (!is_dir('/images/'.$_REQUEST['id'].'/'))
 			{
-				mkdir('/images/'.$_REQUEST['id'].'/',0777,true);
+				mkdir('images/'.$_REQUEST['id'].'/',0777,true);
 			}
 			$directory = opendir('images/'.$_REQUEST['id'].'/');
 			$imgcount=0;
