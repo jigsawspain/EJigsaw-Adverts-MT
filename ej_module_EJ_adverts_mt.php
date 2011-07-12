@@ -32,7 +32,7 @@ class EJ_adverts_mt
 	{
 		echo "
 			<p class=\"EJ_instText\">
-			&gt; EJ Adverts Install Procedure
+			&gt; EJ Adverts MT Install Procedure
 			</p>";
 		// Check for / create table
 		echo "
@@ -125,7 +125,7 @@ class EJ_adverts_mt
 				<p class=\"EJ_instText\">
 				&gt; Creating initital advert...
 				</p>";
-				$this->EJ_mysql->query("INSERT INTO {$this->EJ_mysql->prefix}module_EJ_adverts_mt SET EJ_advertDate = DATE(NOW()), EJ_advertTitle = 'Jigsaw Spain', EJ_advertText = 'This advert has been added by the EJ adverts setup procedure to demonstrate how your adverts will display on your site.<br /><br />Please edit or delete this advert when you are happy with your setup.<br /><br />EJ Adverts - By Jigsaw Spain - <a href=\"http://www.jigsawspain.com\" target=\"_blank\">http://www.jigsawspain.com</a>', EJ_advertHidden = 0, EJ_advertPoster = 'admin', EJ_advertCat = 1, EJ_advertImages='noimage.png', EJ_advertAttributes = '1', EJ_advertContact='Elliott Bristow', EJ_advertWebsite = 'http://www.jigsawspain.com'");
+				$this->EJ_mysql->query("INSERT INTO {$this->EJ_mysql->prefix}module_EJ_adverts_mt SET EJ_advertDate = DATE(NOW()), EJ_advertTitle = 'Jigsaw Spain', EJ_advertText = 'This advert has been added by the EJ Adverts MT setup procedure to demonstrate how your adverts will display on your site.<br /><br />Please edit or delete this advert when you are happy with your setup.<br /><br />EJ Adverts MT - By Jigsaw Spain - <a href=\"http://www.jigsawspain.com\" target=\"_blank\">http://www.jigsawspain.com</a>', EJ_advertHidden = 0, EJ_advertPoster = 'admin', EJ_advertCat = 1, EJ_advertImages='noimage.png', EJ_advertAttributes = '1', EJ_advertContact='Elliott Bristow', EJ_advertWebsite = 'http://www.jigsawspain.com'");
 			}
 			// Create initial categories
 			$this->EJ_mysql->query("SELECT catId FROM {$this->EJ_mysql->prefix}module_EJ_adverts_mt_cats");
@@ -201,7 +201,7 @@ class EJ_adverts_mt
 	{
 		echo "
 			<p class=\"EJ_instText\">
-			&gt; EJ Adverts Update Procedure
+			&gt; EJ Adverts MT Update Procedure
 			</p>";
 		switch ($this->vars['oldversion'])
 		{
