@@ -570,7 +570,7 @@ function DateInput(DateName, Required, DateFormat, DefaultDate, key) {
          }
          for (var i=0;i<12;i++) {
             MonthSelected = ((DefaultDate != '') && (eval(DateName + '_Object.picked.monthIndex') == i)) ? ' selected' : '';
-            writeln('<option value="' + i + '"' + monthselected + '>' + MonthNames[i].substr(0,3) + '</option>');
+            writeln('<option value="' + i + '"' + MonthSelected + '>' + MonthNames[i].substr(0,3) + '</option>');
          }
          writeln('</select>' + String.fromCharCode(13) + '</td>' + String.fromCharCode(13) + '<td valign="middle">');
          writeln('<select' + InitialStatus + ' class="calendar" id="' + DateName + '_Day_ID" onChange="' + DateName + '_Object.changeDay(this);">');
