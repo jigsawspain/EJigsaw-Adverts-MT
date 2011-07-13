@@ -12,7 +12,7 @@ if (!class_exists("EJ_adverts_mt"))
 {
 class EJ_adverts_mt
 {
-	public $version = "0.1";
+	public $version = "0.2";
 	public $creator = "Jigsaw Spain";
 	public $name = "EJigsaw Adverts MT";
 	private $EJ_mysql;
@@ -55,13 +55,13 @@ class EJ_adverts_mt
 				EJ_advertDate DATE NOT NULL ,
 				EJ_advertLoc TEXT NOT NULL ,
 				EJ_advertTitle VARCHAR(100) NOT NULL ,
-				EJ_advertTag VARCHAR(150),
-				EJ_advertText TEXT NOT NULL ,
+				EJ_advertTag VARCHAR(150) ,
+				EJ_advertText TEXT ,
 				EJ_advertImages TEXT ,
 				EJ_advertHidden TINYINT(1) NOT NULL DEFAULT 1 ,
 				EJ_advertPoster VARCHAR(20) NOT NULL ,
 				EJ_advertCat TEXT NOT NULL ,
-				EJ_advertAddress1 VARCHAR(150) NOT NULL DEFAULT 'No Address Provided',
+				EJ_advertAddress1 VARCHAR(150) NOT NULL DEFAULT 'No Address Provided' ,
 				EJ_advertAddress2 VARCHAR(150) NOT NULL DEFAULT 'Please Use Enquiry Form' ,
 				EJ_advertAddress3 VARCHAR(150) ,
 				EJ_advertAddress4 VARCHAR(150) ,
@@ -70,8 +70,19 @@ class EJ_adverts_mt
 				EJ_advertWebsite VARCHAR(150) ,
 				EJ_advertContact VARCHAR(150) NOT NULL ,
 				EJ_advertAttributes TEXT NOT NULL ,
-				EJ_advertTried TINYINT(1) NOT NULL DEFAULT 0,
-				EJ_advertExtra TEXT,
+				EJ_advertTried TINYINT(1) NOT NULL DEFAULT 0 ,
+				EJ_advertExtra TEXT ,
+				EJ_advertCredits INT(6) NOT NULL DEFAULT 0 ,
+				EJ_advertFeaturedDate DATE NOT NULL DEFAULT '2011-01-01' ,
+				EJ_advertTagAllowed TINYINT(1) NOT NULL DEFAULT 0 ,
+				EJ_advertMaxLocs INT(2) NOT NULL DEFAULT 1 ,
+				EJ_advertMaxCats INT(2) NOT NULL DEFAULT 1 ,
+				EJ_advertMaxAtts INT(2) NOT NULL DEFAULT 1 ,
+				EJ_advertTextAllowed TINYINT(1) NOT NULL DEFAULT 0 ,
+				EJ_advertPhoneAllowed TINYINT(1) NOT NULL DEFAULT 0 ,
+				EJ_advertWebAllowed TINYINT(1) NOT NULL DEFAULT 0 ,
+				EJ_advertMapAllowed TINYINT(1) NOT NULL DEFAULT 0 ,
+				EJ_advertContactAllowed TINYINT(1) NOT NULL DEFAULT 0 ,
 				PRIMARY KEY (EJ_advertId)
 				)");
 			$this->EJ_mysql->query("SHOW TABLES LIKE '{$this->EJ_mysql->prefix}module_EJ_adverts_mt'");
@@ -120,11 +131,19 @@ class EJ_adverts_mt
 			$this->EJ_mysql->query("SHOW TABLES LIKE '{$this->EJ_mysql->prefix}module_EJ_adverts_mt_hits'");
 			if ($this->EJ_mysql->numRows()!=1) return false;
 			$this->EJ_mysql->query("CREATE TABLE IF NOT EXISTS {$this->EJ_mysql->prefix}module_EJ_adverts_mt_credits (
-				tranId INT(11) NOT NULL,
+				tranId INT(11) NOT NULL AUTO_INCREMENT,
 				userId VARCHAR(4) NOT NULL ,
 				buysell VARCHAR(1) NOT NULL,
 				amount int(6) NOT NULL,
 				PRIMARY KEY (tranId)
+				)");
+			$this->EJ_mysql->query("SHOW TABLES LIKE '{$this->EJ_mysql->prefix}module_EJ_adverts_mt_credits'");
+			if ($this->EJ_mysql->numRows()!=1) return false;
+			$this->EJ_mysql->query("CREATE TABLE IF NOT EXISTS {$this->EJ_mysql->prefix}module_EJ_adverts_mt_prices (
+				priceId VARCHAR(20) NOT NULL ,
+				name VARCHAR(50) NOT NULL ,
+				basePrice VARCHAR(1) NOT NULL ,
+				fixed TINYINT(1) NOT NULL DEFAULT 0
 				)");
 			$this->EJ_mysql->query("SHOW TABLES LIKE '{$this->EJ_mysql->prefix}module_EJ_adverts_mt_credits'");
 			if ($this->EJ_mysql->numRows()!=1) return false;
@@ -177,7 +196,7 @@ class EJ_adverts_mt
 		$this->EJ_mysql->query("SHOW COLUMNS FROM {$this->EJ_mysql->prefix}users LIKE 'perm_EJ_adverts_mt'");
 		if ($this->EJ_mysql->numRows()==0)
 		{
-			$this->EJ_mysql->query("ALTER TABLE {$this->EJ_mysql->prefix}users ADD perm_EJ_adverts_mt TINYINT(1) NOT NULL DEFAULT 0");
+			$this->EJ_mysql->query("ALTER TABLE {$this->EJ_mysql->prefix}users ADD perm_EJ_adverts_mt TINYINT(1) NOT NULL DEFAULT 0, ADD EJ_adverts_mt_credits INT(6) NOT NULL DEFAULT 0");
 		}
 		$this->EJ_mysql->query("UPDATE {$this->EJ_mysql->prefix}users SET perm_EJ_adverts_mt = 1 WHERE userid = 'admin'");
 		// Check / create initial settings
@@ -186,13 +205,32 @@ class EJ_adverts_mt
 			&gt; Creating initital settings...
 			</p>";
 		$this->EJ_mysql->query("INSERT INTO {$this->EJ_mysql->prefix}module_EJ_adverts_mt_settings (setting, value) VALUES
-			('small_width', '250px') ,
-			('small_height', '350px') ,
-			('small_articles', '3') ,
-			('small_word_count', '25') ,
-			('small_show_images', '1') ,
-			('large_word_count', '30')
+			('curr', 'Euros') ,
+			('curr_symbol', '€') ,
+			('credit_in_curr', '1')
 			ON DUPLICATE KEY UPDATE setting = setting");
+		/*
+			curr > Currency Name
+			curr_symbol > Currency Symbol
+			credit_in_curr > What is 1 credit worth in currency
+		*/
+		$this->EJ_mysql->query("INSERT INTO {$this->EJ_mysql->prefix}module_EJ_adverts_mt_prices (priceId, name, basePrice, fixed) VALUES
+			('unlockFeatured', 'Make Advert Featured', 24, 0) ,
+			('addLoc', 'Add Extra Location', 24, 0) ,
+			('addAtt', 'Add Extra Attribute', 12, 0) ,
+			('addCat', 'Add Extra Category', 24, 0) ,
+			('unlockTag', 'Add Tag Line/Subtitle', 12, 0) ,
+			('unlockMap', 'Add Interactive Map', 12, 0) ,
+			('unlockContact', 'Add Contact Form', 12, 0) ,
+			('unlockWeb', 'Add Website Address', 12, 0) ,
+			('unlockPhone', 'Add Phone Number', 12, 0) ,
+			('unlockText', 'Add Text Description', 12, 0)
+			ON DUPLICATE KEY UPDATE priceId = priceId");
+		/*
+			curr > Currency Name
+			curr_symbol > Currency Symbol
+			credit_in_curr > What is 1 credit worth in currency
+		*/
 		// Update module registry
 		echo "
 			<p class=\"EJ_instText\">
@@ -243,6 +281,7 @@ class EJ_adverts_mt
 		$this->EJ_mysql->query("DROP TABLE IF EXISTS {$this->EJ_mysql->prefix}module_EJ_adverts_mt_locs");
 		$this->EJ_mysql->query("DROP TABLE IF EXISTS {$this->EJ_mysql->prefix}module_EJ_adverts_mt_hits");
 		$this->EJ_mysql->query("DROP TABLE IF EXISTS {$this->EJ_mysql->prefix}module_EJ_adverts_mt_credits");
+		$this->EJ_mysql->query("DROP TABLE IF EXISTS {$this->EJ_mysql->prefix}module_EJ_adverts_mt_prices");
 		echo "
 			<p class=\"EJ_instText\">
 			&gt; Removing User Permissions...
@@ -250,7 +289,7 @@ class EJ_adverts_mt
 		$this->EJ_mysql->query("SHOW COLUMNS FROM {$this->EJ_mysql->prefix}users LIKE 'perm_EJ_adverts_mt'");
 		if ($this->EJ_mysql->numRows()!=0)
 		{
-			$this->EJ_mysql->query("ALTER TABLE {$this->EJ_mysql->prefix}users DROP perm_EJ_adverts_mt");
+			$this->EJ_mysql->query("ALTER TABLE {$this->EJ_mysql->prefix}users DROP perm_EJ_adverts_mt, DROP EJ_adverts_mt_credits");
 		}
 		echo "
 			<p class=\"EJ_instText\">
