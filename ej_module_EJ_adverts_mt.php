@@ -12,7 +12,7 @@ if (!class_exists("EJ_adverts_mt"))
 {
 class EJ_adverts_mt
 {
-	public $version = "0.2";
+	public $version = "0.3";
 	public $creator = "Jigsaw Spain";
 	public $name = "EJigsaw Adverts MT";
 	private $EJ_mysql;
@@ -53,6 +53,7 @@ class EJ_adverts_mt
 			$this->EJ_mysql->query("CREATE TABLE IF NOT EXISTS {$this->EJ_mysql->prefix}module_EJ_adverts_mt (
 				EJ_advertId INT(11) NOT NULL AUTO_INCREMENT ,
 				EJ_advertDate DATE NOT NULL ,
+				EJ_advertModDate DATE NOT NULL ,
 				EJ_advertLoc TEXT NOT NULL ,
 				EJ_advertTitle VARCHAR(100) NOT NULL ,
 				EJ_advertTag VARCHAR(150) ,
@@ -255,6 +256,7 @@ class EJ_adverts_mt
 		switch ($this->vars['oldversion'])
 		{
 			default:
+				$this->EJ_mysql->query("ALTER TABLE {$this->EJ_mysql->prefix}module_".get_class($this)." ADD EJ_advertModDate DATE NOT NULL");
 			break;
 		}
 		echo "
@@ -1317,13 +1319,13 @@ class EJ_adverts_mt
 		echo $content;
 	}
 	
-	function search_box()
+	function search_box($width = 200)
 	{
 		if (isset($_REQUEST['page']))
 			$page = $_REQUEST['page'];
 		else
 			$page = 1;
-		$filter .= "<div id=\"EJ_advertFilter\"><form name=\"advert_filter\" id=\"advert_filter\" method=\"get\" action=\"?gosearch=go\">";
+		$filter .= "<div id=\"EJ_advertFilter\" style=\"width:".($width-10)."px\"><form name=\"advert_filter\" id=\"advert_filter\" method=\"get\" action=\"?gosearch=go\">";
 		$filter .= "
 				<input type=\"hidden\" name=\"module\" id=\"module\" value=\"EJ_adverts_mt\" />
 				<input type=\"hidden\" name=\"action\" id=\"action\" value=\"show_ads\" />
@@ -1346,7 +1348,7 @@ class EJ_adverts_mt
 				</p>
 				<p><strong>Location:</strong><br/>";
 		$this->EJ_mysql->query("SELECT * FROM {$this->EJ_mysql->prefix}module_EJ_adverts_mt_locs ORDER BY locName");
-		$filter .= '<select name="loc[]" id="loc" onchange="updateAdvertFilter(\''.$_SESSION['key'].'\',\''.$this->EJ_settings['instloc'].'\')" style="width:190px;">';
+		$filter .= '<select name="loc[]" id="loc" onchange="updateAdvertFilter(\''.$_SESSION['key'].'\',\''.$this->EJ_settings['instloc'].'\')" style="width:100%;">';
 		$filter .= '<option value="ANY" selected="selected">Any Location</option>';
 		while ($loc = $this->EJ_mysql->getRow())
 		{
@@ -1437,7 +1439,7 @@ class EJ_adverts_mt
 		*/
 		$filter .= "
 				<p>
-					<input type=\"submit\" name=\"search\" id=\"search\" value=\"Search\" />
+					<input type=\"submit\" name=\"search\" id=\"EJmt_search\" value=\"Search\" />
 				</p>
 			</form></div>";
 		echo $filter;
@@ -1873,37 +1875,40 @@ class EJ_adverts_mt
 		echo $content;
 	}
 	
-	function show_popular()
+	function show_popular($adcount = 5, $charcount = 150)
 	{
-		$this->EJ_mysql->query("SELECT adId, hits FROM {$this->EJ_mysql->prefix}module_EJ_adverts_mt_hits WHERE (SELECT EJ_advertHidden FROM {$this->EJ_mysql->prefix}module_EJ_adverts_mt WHERE EJ_advertId = adId) != 1 GROUP BY adId ORDER BY SUM(hits) DESC LIMIT 5");
+		$this->EJ_mysql->query("SELECT adId, hits FROM {$this->EJ_mysql->prefix}module_EJ_adverts_mt_hits WHERE (SELECT EJ_advertHidden FROM {$this->EJ_mysql->prefix}module_EJ_adverts_mt WHERE EJ_advertId = adId) != 1 GROUP BY adId ORDER BY SUM(hits) DESC LIMIT $adcount");
 		$count = 0;
 		while ($hit = $this->EJ_mysql->getRow())
 		{
 			$hits[] = $hit;
 		}
-		foreach ($hits as $hit)
+		if (count($hits)!=0)
 		{
-			$this->EJ_mysql->query("SELECT * FROM {$this->EJ_mysql->prefix}module_EJ_adverts_mt WHERE EJ_advertId = '{$hit['adId']}'");
-			$advert = $this->EJ_mysql->getRow();
-			if (strrpos($advert['EJ_advertLoc'],"(")!=0)
+			foreach ($hits as $hit)
 			{
-				$advert['locName'] = "Multiple Locations";
+				$this->EJ_mysql->query("SELECT * FROM {$this->EJ_mysql->prefix}module_EJ_adverts_mt WHERE EJ_advertId = '{$hit['adId']}'");
+				$advert = $this->EJ_mysql->getRow();
+				if (strrpos($advert['EJ_advertLoc'],"(")!=0)
+				{
+					$advert['locName'] = "Multiple Locations";
+				}
+				if (!empty($advert['EJ_advertImages']) and file_exists(dirname(__FILE__)."/EJ_adverts_mt/images/{$advert['EJ_advertId']}/".$advert['EJ_advertImages']))
+				{
+					$image = "<img src=\"{$this->EJ_settings['instloc']}{$this->moduleloc}image.php/{$advert['EJ_advertImages']}?image={$this->EJ_settings['instloc']}{$this->moduleloc}images/{$advert['EJ_advertId']}/{$advert['EJ_advertImages']}&amp;height=60&amp;width=80\" alt=\"{$advert['EJ_advertTitle']}\"/>";
+				} else
+				{
+					$image = "<img src=\"{$this->EJ_settings['instloc']}{$this->moduleloc}image.php/noimage.png?image={$this->EJ_settings['instloc']}{$this->moduleloc}images/noimage.png&amp;height=60&amp;width=80\" alt=\"{$advert['EJ_advertTitle']}\"/>";
+				}
+				$content .= "<div class=\"EJ_advertPopular\" id=\"{$advert['EJ_advertId']}\"><div style=\"float: left; margin-right: 5px;\"><div class=\"EJ_advertPopularImageHolder\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">$image</a></div></div><div class=\"header\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">{$advert['EJ_advertTitle']}</a></div><p>".str_replace(array("<br />", "<br>","<br/>", "\n")," ", substr($advert['EJ_advertText'],0,$charcount))."... <a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">more</a></p><div style=\"clear: left;\"></div></div>";
+				$count ++;
 			}
-			if (!empty($advert['EJ_advertImages']) and file_exists(dirname(__FILE__)."/EJ_adverts_mt/images/{$advert['EJ_advertId']}/".$advert['EJ_advertImages']))
-			{
-				$image = "<img src=\"{$this->EJ_settings['instloc']}{$this->moduleloc}image.php/{$advert['EJ_advertImages']}?image={$this->EJ_settings['instloc']}{$this->moduleloc}images/{$advert['EJ_advertId']}/{$advert['EJ_advertImages']}&amp;height=60&amp;width=80\" alt=\"{$advert['EJ_advertTitle']}\"/>";
-			} else
-			{
-				$image = "<img src=\"{$this->EJ_settings['instloc']}{$this->moduleloc}image.php/noimage.png?image={$this->EJ_settings['instloc']}{$this->moduleloc}images/noimage.png&amp;height=60&amp;width=80\" alt=\"{$advert['EJ_advertTitle']}\"/>";
-			}
-			$content .= "<div class=\"EJ_advertPopular\" id=\"{$advert['EJ_advertId']}\"><div class=\"header\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">{$advert['EJ_advertTitle']}</a></div><div style=\"float: left; margin-right: 5px;\"><div class=\"EJ_advertPopularImageHolder\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">$image</a></div></div><p>".str_replace(array("<br />", "<br>","<br/>", "\n")," ", substr($advert['EJ_advertText'],0,150))."... <a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">more</a></p><div style=\"clear: left;\"></div></div>";
-			$count ++;
 		}
-		if ($count < 5)
+		if ($count < $adcount)
 		{
-			for ($i = $count; $i<5; $i++)
+			for ($i = $count; $i<$adcount; $i++)
 			{
-				$this->EJ_mysql->query("SELECT * FROM {$this->EJ_mysql->prefix}module_EJ_adverts_mt WHERE EJ_advertHidden = 0 ORDER BY RAND()");
+				$this->EJ_mysql->query("SELECT * FROM {$this->EJ_mysql->prefix}module_EJ_adverts_mt WHERE EJ_advertHidden = 0 ORDER BY RAND() LIMIT 1");
 				$advert = $this->EJ_mysql->getRow();
 				if (strrpos($advert['EJ_advertLoc'],"(")!=0)
 				{
@@ -1916,15 +1921,15 @@ class EJ_adverts_mt
 				{
 					$image = "<img src=\"{$this->EJ_settings['instloc']}{$this->moduleloc}image.php/noimage.png?image={$this->EJ_settings['instloc']}{$this->moduleloc}images/noimage.png&amp;height=60&amp;width=80\" alt=\"{$advert['EJ_advertTitle']}\"/>";
 				}
-				$content .= "<div class=\"EJ_advertPopular\" id=\"{$advert['EJ_advertId']}\"><div class=\"header\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">{$advert['EJ_advertTitle']}</a></div><div style=\"float: left; margin-right: 5px;\"><div class=\"EJ_advertPopularImageHolder\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">$image</a></div></div><p>".str_replace(array("<br />", "<br>","<br/>", "\n")," ", substr($advert['EJ_advertText'],0,150))."... <a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">more</a></p><div style=\"clear:left; \"></div></div>";
+				$content .= "<div class=\"EJ_advertPopular\" id=\"{$advert['EJ_advertId']}\"><div style=\"float: left; margin-right: 5px;\"><div class=\"EJ_advertPopularImageHolder\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">$image</a></div></div><div class=\"header\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">{$advert['EJ_advertTitle']}</a></div><p>".str_replace(array("<br />", "<br>","<br/>", "\n")," ", substr($advert['EJ_advertText'],0,$charcount))."... <a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">more</a></p><div style=\"clear:left; \"></div></div>";
 			}
 		}
 		echo $content;
 	}
 	
-	function show_new()
+	function show_new($adcount = 5, $charcount = 150)
 	{
-		$this->EJ_mysql->query("SELECT * FROM {$this->EJ_mysql->prefix}module_EJ_adverts_mt WHERE EJ_advertHidden = 0 ORDER BY EJ_advertId DESC LIMIT 5");
+		$this->EJ_mysql->query("SELECT * FROM {$this->EJ_mysql->prefix}module_EJ_adverts_mt WHERE EJ_advertHidden = 0 ORDER BY EJ_advertId DESC LIMIT $adcount");
 		while ($advert = $this->EJ_mysql->getRow())
 		{
 			if (strrpos($advert['EJ_advertLoc'],"(")!=0)
@@ -1938,7 +1943,28 @@ class EJ_adverts_mt
 			{
 				$image = "<img src=\"{$this->EJ_settings['instloc']}{$this->moduleloc}image.php/noimage.png?image={$this->EJ_settings['instloc']}{$this->moduleloc}images/noimage.png&amp;height=60&amp;width=80\" alt=\"{$advert['EJ_advertTitle']}\"/>";
 			}
-			$content .= "<div class=\"EJ_advertPopular\" id=\"{$advert['EJ_advertId']}\"><div class=\"header\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">{$advert['EJ_advertTitle']}</a></div><div style=\"float: left; margin-right: 5px;\"><div class=\"EJ_advertPopularImageHolder\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">$image</a></div></div><p>".str_replace(array('<br>','<br/>','<br />', "\n")," ",substr($advert['EJ_advertText'],0,150))."... <a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">more</a></p><div style=\"clear: left;\"></div></div>";
+			$content .= "<div class=\"EJ_advertNew\" id=\"{$advert['EJ_advertId']}\"><div style=\"float: left; margin-right: 5px;\"><div class=\"EJ_advertNewImageHolder\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">$image</a></div></div><div class=\"header\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">{$advert['EJ_advertTitle']}</a></div><p>".str_replace(array('<br>','<br/>','<br />', "\n")," ",substr($advert['EJ_advertText'],0,$charcount))."... <a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">more</a></p><div style=\"clear: left;\"></div></div>";
+		}
+		echo $content;
+	}
+	
+	function show_modified($adcount = 5, $charcount = 150)
+	{
+		$this->EJ_mysql->query("SELECT * FROM {$this->EJ_mysql->prefix}module_EJ_adverts_mt WHERE EJ_advertHidden = 0 ORDER BY EJ_advertModDate DESC, EJ_advertDate DESC LIMIT $adcount");
+		while ($advert = $this->EJ_mysql->getRow())
+		{
+			if (strrpos($advert['EJ_advertLoc'],"(")!=0)
+			{
+				$advert['locName'] = "Multiple Locations";
+			}
+			if (!empty($advert['EJ_advertImages']) and file_exists(dirname(__FILE__)."/EJ_adverts_mt/images/{$advert['EJ_advertId']}/{$advert['EJ_advertImages']}"))
+			{
+				$image = "<img src=\"{$this->EJ_settings['instloc']}{$this->moduleloc}image.php/{$advert['EJ_advertImages']}?image={$this->EJ_settings['instloc']}{$this->moduleloc}images/{$advert['EJ_advertId']}/{$advert['EJ_advertImages']}&amp;height=60&amp;width=80\" alt=\"{$advert['EJ_advertTitle']}\"/>";
+			} else
+			{
+				$image = "<img src=\"{$this->EJ_settings['instloc']}{$this->moduleloc}image.php/noimage.png?image={$this->EJ_settings['instloc']}{$this->moduleloc}images/noimage.png&amp;height=60&amp;width=80\" alt=\"{$advert['EJ_advertTitle']}\"/>";
+			}
+			$content .= "<div class=\"EJ_advertNew\" id=\"{$advert['EJ_advertId']}\"><div style=\"float: left; margin-right: 5px;\"><div class=\"EJ_advertNewImageHolder\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">$image</a></div></div><div class=\"header\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">{$advert['EJ_advertTitle']}</a></div><p>".str_replace(array('<br>','<br/>','<br />', "\n")," ",substr($advert['EJ_advertText'],0,$charcount))."... <a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">more</a></p><div style=\"clear: left;\"></div></div>";
 		}
 		echo $content;
 	}
