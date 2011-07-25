@@ -171,6 +171,39 @@ require('../../config.inc.php');
 	font-size: 0.9em;
 }
 
+.EJ_advertModified
+{
+	font-size: 10px;
+	margin: 3px 0;
+	width: 100%;
+}
+
+.EJ_advertModified .header a
+{
+	font-weight: bold;
+	font-size: 12px !important;
+}
+
+.EJ_advertModified a
+{
+	color: #009ACA;
+}
+
+.EJ_advertModifiedImageHolder
+{
+	display: table-cell;
+	height: 60px;
+	text-align: center;
+	vertical-align: middle;
+	width: 80px;
+}
+
+.EJ_advertModifiedImageHolder img
+{
+	display: block;
+	margin: 0 auto;
+}
+
 .EJ_advertNew
 {
 	font-size: 10px;
