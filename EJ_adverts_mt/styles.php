@@ -18,25 +18,7 @@ require('../../config.inc.php');
 * Common Tags
 */
 
-h2
-{
-	border-top: #42769B 1px solid;
-	border-bottom: #42769B 1px solid;
-	color: #42769B;
-	font-size: 1.1em;
-	margin: 0;
-	padding: 2px 3px;
-}
-
-h2 img
-{
-	border:0;
-	height: 15px;
-	margin-bottom: 0.2em;
-	vertical-align: middle;
-	width: 15px;
-}
-
+// None Defined
 
 /*
 * Classes and IDs
@@ -119,6 +101,11 @@ h2 img
 	width: 100%;
 }
 
+#advert_filter #EJmt_search
+{
+	width: 100%;
+}
+
 #advert_filter #subcategory
 {
 	width: 100%;
@@ -176,30 +163,58 @@ h2 img
 
 #EJ_advertFilter
 {
-	border: #CCC 1px solid;
-	float: right;
-	margin-left: 5px;
-	width: 200px;
+	margin: 0 5px;
 }
 
 #EJ_advertFilter p
 {
 	font-size: 0.9em;
-	margin: 0 5px 5px 5px;
+}
+
+.EJ_advertNew
+{
+	font-size: 10px;
+	margin: 3px 0;
+	width: 100%;
+}
+
+.EJ_advertNew .header a
+{
+	font-weight: bold;
+	font-size: 12px !important;
+}
+
+.EJ_advertNew a
+{
+	color: #009ACA;
+}
+
+.EJ_advertNewImageHolder
+{
+	display: table-cell;
+	height: 60px;
+	text-align: center;
+	vertical-align: middle;
+	width: 80px;
+}
+
+.EJ_advertNewImageHolder img
+{
+	display: block;
+	margin: 0 auto;
 }
 
 .EJ_advertPopular
 {
-	font-size: 11px;
+	font-size: 10px;
 	margin: 3px 0;
 	width: 100%;
-	font-weight: bold;
 }
 
 .EJ_advertPopular .header a
 {
 	font-weight: bold;
-	font-size: 14px !important;
+	font-size: 12px !important;
 }
 
 .EJ_advertPopular a
@@ -209,7 +224,6 @@ h2 img
 
 .EJ_advertPopularImageHolder
 {
-	border: #AAA 1px solid;
 	display: table-cell;
 	height: 60px;
 	text-align: center;
