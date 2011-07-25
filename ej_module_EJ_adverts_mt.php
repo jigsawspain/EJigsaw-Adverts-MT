@@ -12,7 +12,7 @@ if (!class_exists("EJ_adverts_mt"))
 {
 class EJ_adverts_mt
 {
-	public $version = "0.3";
+	public $version = "0.3.1";
 	public $creator = "Jigsaw Spain";
 	public $name = "EJigsaw Adverts MT";
 	private $EJ_mysql;
@@ -1964,7 +1964,7 @@ class EJ_adverts_mt
 			{
 				$image = "<img src=\"{$this->EJ_settings['instloc']}{$this->moduleloc}image.php/noimage.png?image={$this->EJ_settings['instloc']}{$this->moduleloc}images/noimage.png&amp;height=60&amp;width=80\" alt=\"{$advert['EJ_advertTitle']}\"/>";
 			}
-			$content .= "<div class=\"EJ_advertNew\" id=\"{$advert['EJ_advertId']}\"><div style=\"float: left; margin-right: 5px;\"><div class=\"EJ_advertNewImageHolder\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">$image</a></div></div><div class=\"header\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">{$advert['EJ_advertTitle']}</a></div><p>".str_replace(array('<br>','<br/>','<br />', "\n")," ",substr($advert['EJ_advertText'],0,$charcount))."... <a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">more</a></p><div style=\"clear: left;\"></div></div>";
+			$content .= "<div class=\"EJ_advertModified\" id=\"{$advert['EJ_advertId']}\"><div style=\"float: left; margin-right: 5px;\"><div class=\"EJ_advertModifiedImageHolder\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">$image</a></div></div><div class=\"header\"><a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">{$advert['EJ_advertTitle']}</a></div><p>".str_replace(array('<br>','<br/>','<br />', "\n")," ",substr($advert['EJ_advertText'],0,$charcount))."... <a href=\"?module=EJ_adverts_mt&action=show_advert&adId={$advert['EJ_advertId']}\">more</a></p><div style=\"clear: left;\"></div></div>";
 		}
 		echo $content;
 	}
